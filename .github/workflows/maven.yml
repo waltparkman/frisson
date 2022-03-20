@@ -1,0 +1,37 @@
+# This workflow will build a Java project with Maven, and cache/restore any dependencies to improve the workflow execution time
+# For more information see: https://help.github.com/actions/language-and-framework-guides/building-and-testing-java-with-maven
+
+name: Java CI with Maven
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 17
+      uses: actions/setup-java@v2
+      with:
+        java-version: '17'
+        distribution: 'adopt'
+        cache: maven
+    - name: Restore Maven cache
+      uses: skjolber/maven-cache-github-action@v1
+      with:
+        step: restore
+    - name: Build with Maven
+      env: # Pass GitHub Secrets to the job        
+        SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        SUPABASE_DATABASE_PASSWORD: ${{ secrets.SUPABASE_DATABASE_PASSWORD }}
+        SUPABASE_DATABASE_URL: ${{ secrets.SUPABASE_DATABASE_URL }}
+        SUPABASE_DATABASE_USER: ${{ secrets.SUPABASE_DATABASE_USER }}
+        SUPABASE_JWT_SIGNER: ${{ secrets.SUPABASE_JWT_SIGNER }}
+        SUPABASE_URL: ${{ secrets.SUPABASE_URL }}        
+      run: mvn -B verify --file pom.xml
